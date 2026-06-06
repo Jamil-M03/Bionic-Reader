@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Bionic PDF Reader</title>
+  <link rel="stylesheet" href="viewer.css">
+</head>
+<body>
+  <header class="bar">
+    <div class="brand">
+      <span class="logo"><b>Bi</b>on<i>.</i></span>
+      <span class="doc" id="docName">Bionic PDF Reader</span>
+    </div>
+
+    <div class="controls" id="controls" hidden>
+      <div class="seg" id="modeSeg" role="group" aria-label="View mode">
+        <button data-mode="read" aria-pressed="true">Reading</button>
+        <button data-mode="page" aria-pressed="false">Original</button>
+      </div>
+
+      <label class="switch" title="Toggle bionic">
+        <input type="checkbox" id="bionicToggle" checked>
+        <span class="track"><span class="thumb"></span></span>
+        <span class="switch-label">Bionic</span>
+      </label>
+
+      <div class="seg" id="strSeg" role="group" aria-label="Strength">
+        <button data-s="0.30">Low</button>
+        <button data-s="0.45" aria-pressed="true">Med</button>
+        <button data-s="0.60">High</button>
+      </div>
+
+      <button class="ghost" id="newFile">Open another</button>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="drop" id="drop">
+      <div class="drop-inner">
+        <div class="drop-mark"><b>Bi</b>onic</div>
+        <h1>Drop a PDF to read it</h1>
+        <p>Text is extracted and re-flowed with bionic emphasis. Your file is processed entirely on your device — nothing is uploaded.</p>
+        <label class="pick">
+          Choose a PDF
+          <input type="file" id="file" accept="application/pdf,.pdf" hidden>
+        </label>
+        <p class="fineprint">Complex layouts (multi-column, tables) may re-flow imperfectly. Switch to <em>Original</em> for the exact page image.</p>
+      </div>
+    </section>
+
+    <div class="status" id="status" hidden></div>
+    <article class="reader" id="reader" hidden></article>
+    <div class="pages" id="pages" hidden></div>
+  </main>
+
+  <script type="module" src="viewer.js"></script>
+</body>
+</html>

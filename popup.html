@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="mark" aria-hidden="true">
+        <b>Bi</b>on<span class="dot">.</span>
+      </div>
+      <div class="titles">
+        <h1>Bionic Reader</h1>
+        <p class="sub">Guide your eyes, read faster</p>
+      </div>
+    </header>
+
+    <div class="row toggle-row">
+      <span class="row-label">Bionic mode</span>
+      <label class="switch">
+        <input type="checkbox" id="toggle">
+        <span class="track"><span class="thumb"></span></span>
+      </label>
+    </div>
+
+    <div class="field">
+      <span class="row-label">Fixation strength</span>
+      <div class="seg" id="seg" role="group" aria-label="Fixation strength">
+        <button data-s="0.30">Low</button>
+        <button data-s="0.45">Medium</button>
+        <button data-s="0.60">High</button>
+      </div>
+    </div>
+
+    <div class="preview" id="preview" aria-hidden="true"></div>
+
+    <button class="pdf-btn" id="pdfBtn">
+      <span class="pdf-ic">↧</span> Open a PDF in the reader
+    </button>
+
+    <footer>
+      <span>Toggle anywhere</span>
+      <kbd>Ctrl</kbd><kbd>Alt</kbd><kbd>B</kbd>
+    </footer>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>
