@@ -1,8 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" width="96" height="96">
-  <rect width="96" height="96" rx="20" fill="#211b14"/>
-  <text x="50%" y="50%" text-anchor="middle" dominant-baseline="central"
-        font-family="Georgia, 'Iowan Old Style', serif" font-size="46" letter-spacing="-2">
-    <tspan fill="#f4efe6" font-weight="800">Bi</tspan><tspan fill="#9c9486" font-weight="400">o</tspan>
-  </text>
-  <circle cx="78" cy="68" r="5" fill="#b3452b"/>
-</svg>
