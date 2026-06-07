@@ -81,8 +81,8 @@
     return nodes;
   }
 
-  // Process in idle chunks so big pages don't jank.
-  function processRoot(root) {
+  // Process in idle chunks so big pages don't jank. Calls done() when complete.
+  function processRoot(root, done) {
     const nodes = collectTextNodes(root);
     let i = 0;
     const CHUNK = 400;
@@ -93,10 +93,19 @@
         if (nodes[i].parentNode) processTextNode(nodes[i]);
       }
       if (i < nodes.length) {
-        (window.requestIdleCallback || window.setTimeout)(run, 1);
+        (window.requestIdleCallback || window.setTimeout)(run, { timeout: 200 });
+      } else if (done) {
+        done();
       }
     }
     run();
+  }
+
+  // Synchronous, non-chunked processing for small dynamically-added subtrees.
+  function processSubtree(root) {
+    collectTextNodes(root).forEach((n) => {
+      if (n.parentNode) processTextNode(n);
+    });
   }
 
   // Undo: replace every <b.brx-b> with its text, then merge text nodes back.
@@ -116,22 +125,27 @@
   function startObserver() {
     if (observer) return;
     observer = new MutationObserver((mutations) => {
-      if (!enabled) return;
-      for (const mut of mutations) {
-        mut.addedNodes.forEach((node) => {
-          if (node.nodeType === Node.ELEMENT_NODE) {
-            if (!shouldSkip(node)) processRoot(node);
-          } else if (node.nodeType === Node.TEXT_NODE && !shouldSkip(node)) {
-            if (node.parentNode) processTextNode(node);
-          }
-        });
+      if (!enabled || !observer) return;
+      // Disconnect while we edit so our own splits aren't re-observed
+      // (that feedback loop is what garbled large pages like Wikipedia).
+      observer.disconnect();
+      try {
+        for (const mut of mutations) {
+          mut.addedNodes.forEach((node) => {
+            if (node.nodeType === Node.ELEMENT_NODE) {
+              if (!shouldSkip(node)) processSubtree(node);
+            } else if (node.nodeType === Node.TEXT_NODE && !shouldSkip(node)) {
+              if (node.parentNode) processTextNode(node);
+            }
+          });
+        }
+      } finally {
+        if (observer) observer.observe(document.body || document.documentElement, OBS_OPTS);
       }
     });
-    observer.observe(document.body || document.documentElement, {
-      childList: true,
-      subtree: true
-    });
+    observer.observe(document.body || document.documentElement, OBS_OPTS);
   }
+  const OBS_OPTS = { childList: true, subtree: true };
 
   function stopObserver() {
     if (observer) { observer.disconnect(); observer = null; }
@@ -144,9 +158,15 @@
       return;
     }
     if (enabled) {
-      if (!processed) { processRoot(document.body); processed = true; }
       document.documentElement.classList.add("brx-on");
-      startObserver();
+      if (!processed) {
+        processed = true;
+        // Start the observer only after the full initial pass, otherwise it
+        // observes our own edits and reprocesses them in a cascade.
+        processRoot(document.body, startObserver);
+      } else {
+        startObserver();
+      }
     } else {
       document.documentElement.classList.remove("brx-on");
       stopObserver();

@@ -15,8 +15,8 @@
 
     <div class="controls" id="controls" hidden>
       <div class="seg" id="modeSeg" role="group" aria-label="View mode">
-        <button data-mode="read" aria-pressed="true">Reading</button>
-        <button data-mode="page" aria-pressed="false">Original</button>
+        <button data-mode="layout" aria-pressed="true">Layout</button>
+        <button data-mode="read" aria-pressed="false">Reflow</button>
       </div>
 
       <label class="switch" title="Toggle bionic">
@@ -40,18 +40,18 @@
       <div class="drop-inner">
         <div class="drop-mark"><b>Bi</b>onic</div>
         <h1>Drop a PDF to read it</h1>
-        <p>Text is extracted and re-flowed with bionic emphasis. Your file is processed entirely on your device — nothing is uploaded.</p>
+        <p>The page keeps its original layout — bionic emphasis is applied to the text in place. Your file is processed entirely on your device; nothing is uploaded.</p>
         <label class="pick">
           Choose a PDF
           <input type="file" id="file" accept="application/pdf,.pdf" hidden>
         </label>
-        <p class="fineprint">Complex layouts (multi-column, tables) may re-flow imperfectly. Switch to <em>Original</em> for the exact page image.</p>
+        <p class="fineprint">In <em>Layout</em> view, bionic text uses a substitute font positioned to match the original. Turn <em>Bionic</em> off to see the exact original page. <em>Reflow</em> re-flows text into a clean reading column.</p>
       </div>
     </section>
 
     <div class="status" id="status" hidden></div>
-    <article class="reader" id="reader" hidden></article>
     <div class="pages" id="pages" hidden></div>
+    <article class="reader" id="reader" hidden></article>
   </main>
 
   <script type="module" src="viewer.js"></script>

@@ -18,14 +18,18 @@ The extension stays loaded until you restart Firefox. To install permanently you
 
 ## Why PDFs use a separate reader
 
-Firefox's built-in PDF viewer (pdf.js) draws the visible text onto a `<canvas>`. The selectable text sitting on top is fully transparent — it exists only for selection and accessibility. That means there is **no DOM text to bold**, so a normal content script can't apply bionic styling to a PDF the way it does to a web page.
+Firefox's built-in PDF viewer (pdf.js) draws the visible text onto a `<canvas>`. The selectable text sitting on top is fully transparent — it exists only for selection and accessibility. So there is **no DOM text to bold**, and a normal content script can't apply bionic to a PDF the way it does to a web page.
 
-The bundled reader works around this by using pdf.js to *extract* the text and re-render it as real, styleable HTML, then applying bionic to it. Tradeoffs:
+The bundled reader works around this with pdf.js. It has two views:
 
-- Great for normal running text (articles, papers, books).
-- Multi-column layouts, tables, and heavy formatting may re-flow imperfectly — use the **Original** toggle to see the exact page image (no bionic).
-- Scanned/image-only PDFs have no extractable text; they'll show only in Original view.
-- Files never leave your device — extraction happens locally.
+- **Layout** (default) — keeps the page's original structure (margins, columns, line breaks, positions). Bionic emphasis is applied to the text *in place*. The bionic text is drawn with a substitute font that's stretched to match the original's spacing, so the layout stays faithful even though glyph shapes differ from the embedded font. Turn the **Bionic** switch off to see the exact original page image.
+- **Reflow** — re-flows the extracted text into a clean single reading column. Best for linear reading; ignores the original layout.
+
+Notes:
+
+- Scanned/image-only PDFs have no extractable text, so bionic can't be applied — Layout view with Bionic off still shows them correctly.
+- Pages render lazily as you scroll, so large PDFs open quickly.
+- Files never leave your device; everything happens locally.
 
 ## Files
 
