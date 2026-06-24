@@ -87,7 +87,7 @@ body {
 /* ---------- status ---------- */
 .status { max-width: 70ch; margin: 28px auto; padding: 0 24px; font-family: var(--mono);
   font-size: 13px; color: var(--ink-soft); text-align: center; }
-.status .err { color: var(--accent); }
+.status.err { color: var(--accent); }
 
 /* ---------- layout (page) view ---------- */
 .pages { display: flex; flex-direction: column; align-items: center; gap: 22px; padding: 26px 16px 120px; }
@@ -109,10 +109,9 @@ body {
 }
 .text-layer b { font-weight: 700; color: inherit; }
 
-/* bionic ON in layout: hide the exact image, show our positioned text */
-.page-wrap.bionic .pg-canvas { visibility: hidden; }
-.page-wrap.bionic .text-layer span { color: var(--ink); }
-/* bionic OFF: exact original image; text stays transparent on top */
+/* Canvas (with images/figures) stays visible in both modes. In bionic mode
+   each span carries an opaque background sampled from the page, set in JS,
+   which masks the original text underneath while images show through. */
 
 /* ---------- reflow view ---------- */
 .reader { max-width: 70ch; margin: 8px auto 120px; padding: 32px 28px 0; font-size: 19px; line-height: 1.72; color: var(--ink); }

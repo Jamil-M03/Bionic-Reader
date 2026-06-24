@@ -33,27 +33,37 @@ function fixationLength(n, s) {
   if (n <= 3) return 1;
   return Math.min(Math.max(Math.round(n * s), 1), n - 1);
 }
-function esc(s) {
-  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-}
 const WORD_RE = /\p{L}[\p{L}\p{M}\u2019']*/gu;
-function applyBionic(text, s) {
-  let out = "", last = 0, m;
+// Build a DocumentFragment for the text. When bold is true, each word's
+// fixation prefix is wrapped in <b>. Uses DOM nodes (no innerHTML) so the
+// text is never parsed as markup.
+function bionicFrag(text, s, bold) {
+  const frag = document.createDocumentFragment();
+  let last = 0, m;
   WORD_RE.lastIndex = 0;
   while ((m = WORD_RE.exec(text)) !== null) {
     const w = m[0], start = m.index;
-    if (start > last) out += esc(text.slice(last, start));
-    const k = fixationLength(w.length, s);
-    out += "<b>" + esc(w.slice(0, k)) + "</b>" + esc(w.slice(k));
+    if (start > last) frag.appendChild(document.createTextNode(text.slice(last, start)));
+    if (bold) {
+      const k = fixationLength(w.length, s);
+      const b = document.createElement("b");
+      b.textContent = w.slice(0, k);
+      frag.appendChild(b);
+      const rest = w.slice(k);
+      if (rest) frag.appendChild(document.createTextNode(rest));
+    } else {
+      frag.appendChild(document.createTextNode(w));
+    }
     last = start + w.length;
   }
-  out += esc(text.slice(last));
-  return out;
+  if (last < text.length) frag.appendChild(document.createTextNode(text.slice(last)));
+  return frag;
 }
 
 function setStatus(msg, isErr) {
   status.hidden = !msg;
-  status.innerHTML = msg ? (isErr ? '<span class="err">' + esc(msg) + "</span>" : esc(msg)) : "";
+  status.textContent = msg || "";
+  status.classList.toggle("err", !!isErr);
 }
 
 // ================= LAYOUT (structure-preserving) VIEW =================
@@ -109,32 +119,85 @@ async function renderLayoutPage(view) {
     const vp = view.viewport;
     view.canvas.width = Math.floor(vp.width * dpr);
     view.canvas.height = Math.floor(vp.height * dpr);
-    const ctx = view.canvas.getContext("2d");
+    const ctx = view.canvas.getContext("2d", { willReadFrequently: true });
     ctx.scale(dpr, dpr);
     await view.page.render({ canvasContext: ctx, viewport: vp }).promise;
 
+    // Grab the rendered pixels so we can sample the local background colour
+    // behind each text run (used to mask the original text in bionic mode
+    // while leaving images/figures on the canvas visible).
+    let img = null;
+    try { img = ctx.getImageData(0, 0, view.canvas.width, view.canvas.height); }
+    catch (e) { img = null; }
+
     const tc = await view.page.getTextContent();
     view.items = tc.items.filter((it) => typeof it.str === "string" && it.str.length);
-    buildTextLayer(view);
+    buildTextLayer(view, img, dpr);
   } catch (e) {
     console.error("page render error", view.pageNum, e);
   }
 }
 
-function buildTextLayer(view) {
+// Pick the brightest of a few points around a text run as its background
+// colour (works for the common case of dark text on a light page).
+function sampleBg(img, W, H, dpr, left, top, fh, w) {
+  if (!img) return "rgb(255,255,255)";
+  const d = img.data;
+  const pts = [
+    [left + w * 0.5, top - 2],
+    [left + 1, top - 2],
+    [left + w * 0.5, top + fh + 2],
+    [left - 4, top + fh * 0.5],
+    [left + w + 3, top + fh * 0.5]
+  ];
+  let best = [255, 255, 255], bestLum = -1;
+  for (const p of pts) {
+    const x = Math.round(p[0] * dpr), y = Math.round(p[1] * dpr);
+    if (x < 0 || y < 0 || x >= W || y >= H) continue;
+    const i = (y * W + x) * 4;
+    if (d[i + 3] === 0) { best = [255, 255, 255]; bestLum = 255; continue; }
+    const lum = 0.2126 * d[i] + 0.7152 * d[i + 1] + 0.0722 * d[i + 2];
+    if (lum > bestLum) { bestLum = lum; best = [d[i], d[i + 1], d[i + 2]]; }
+  }
+  return "rgb(" + best[0] + "," + best[1] + "," + best[2] + ")";
+}
+
+// Mask the original canvas text under a span (bionic on) or reveal it (off).
+function styleBionicSpan(span, on) {
+  if (on) {
+    const bg = span.dataset.bg || "rgb(255,255,255)";
+    span.style.color = "var(--ink)";
+    span.style.backgroundColor = bg;
+    span.style.boxShadow = "0 0 0 1px " + bg; // expand mask to cover glyph edges
+  } else {
+    span.style.color = "";
+    span.style.backgroundColor = "";
+    span.style.boxShadow = "";
+  }
+}
+
+function buildTextLayer(view, img, dpr) {
   const tl = view.tl;
   const frag = document.createDocumentFragment();
+  const W = view.canvas.width, H = view.canvas.height;
   for (const item of view.items) {
     const tx = pdfjsLib.Util.transform(view.viewport.transform, item.transform);
     const fontHeight = Math.hypot(tx[2], tx[3]);
     if (fontHeight < 0.5) continue;
+    const leftCss = tx[4], topCss = tx[5] - fontHeight;
+    const widthCss = item.width * view.viewport.scale;
     const span = document.createElement("span");
-    span.style.left = tx[4].toFixed(2) + "px";
-    span.style.top = (tx[5] - fontHeight).toFixed(2) + "px";
+    span.style.left = leftCss.toFixed(2) + "px";
+    span.style.top = topCss.toFixed(2) + "px";
     span.style.fontSize = fontHeight.toFixed(2) + "px";
-    span.dataset.w = (item.width * view.viewport.scale).toFixed(2);
-    if (bionicOn) span.innerHTML = applyBionic(item.str, strength);
-    else span.textContent = item.str;
+    span.dataset.w = widthCss.toFixed(2);
+    span.dataset.bg = sampleBg(img, W, H, dpr, leftCss, topCss, fontHeight, widthCss);
+    if (bionicOn) {
+      span.appendChild(bionicFrag(item.str, strength, true));
+      styleBionicSpan(span, true);
+    } else {
+      span.textContent = item.str;
+    }
     frag.appendChild(span);
   }
   tl.replaceChildren(frag);
@@ -165,8 +228,13 @@ function refreshLayoutText() {
     if (!view.rendered || !view.items) continue;
     const spans = view.tl.children;
     for (let i = 0; i < view.items.length && i < spans.length; i++) {
-      if (bionicOn) spans[i].innerHTML = applyBionic(view.items[i].str, strength);
-      else spans[i].textContent = view.items[i].str;
+      if (bionicOn) {
+        spans[i].replaceChildren(bionicFrag(view.items[i].str, strength, true));
+        styleBionicSpan(spans[i], true);
+      } else {
+        spans[i].textContent = view.items[i].str;
+        styleBionicSpan(spans[i], false);
+      }
     }
     rescaleSpans(view.tl);
   }
@@ -239,7 +307,8 @@ function renderReader() {
     } else {
       for (const para of paras) {
         const p = document.createElement("p");
-        p.innerHTML = bionicOn ? applyBionic(para, strength) : esc(para);
+        if (bionicOn) p.appendChild(bionicFrag(para, strength, true));
+        else p.textContent = para;
         frag.appendChild(p);
       }
     }

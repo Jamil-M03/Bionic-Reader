@@ -22,12 +22,13 @@ Firefox's built-in PDF viewer (pdf.js) draws the visible text onto a `<canvas>`.
 
 The bundled reader works around this with pdf.js. It has two views:
 
-- **Layout** (default) — keeps the page's original structure (margins, columns, line breaks, positions). Bionic emphasis is applied to the text *in place*. The bionic text is drawn with a substitute font that's stretched to match the original's spacing, so the layout stays faithful even though glyph shapes differ from the embedded font. Turn the **Bionic** switch off to see the exact original page image.
+- **Layout** (default) — keeps the page's original structure (margins, columns, line breaks, positions) and shows the page's images, figures, and diagrams. Bionic emphasis is applied to the text *in place*: the original page is rendered to a canvas, and each bionicized word is laid over it on a small background chip that masks only the original word underneath, so images show through untouched. The bionic text uses a substitute font stretched to match the original spacing. Turn the **Bionic** switch off to see the exact original page.
 - **Reflow** — re-flows the extracted text into a clean single reading column. Best for linear reading; ignores the original layout.
 
 Notes:
 
-- Scanned/image-only PDFs have no extractable text, so bionic can't be applied — Layout view with Bionic off still shows them correctly.
+- Text sitting directly on top of a photo or a dark background may show a faint mask rectangle in bionic mode; switch Bionic off for the exact page.
+- Scanned/image-only PDFs have no extractable text, so bionic can't be applied — the page image still shows correctly.
 - Pages render lazily as you scroll, so large PDFs open quickly.
 - Files never leave your device; everything happens locally.
 

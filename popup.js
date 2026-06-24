@@ -11,14 +11,24 @@ function fixationLength(n, s) {
   if (n <= 3) return 1;
   return Math.min(Math.max(Math.round(n * s), 1), n - 1);
 }
-function esc(s) {
-  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-}
 function renderPreview(strength) {
-  preview.innerHTML = SAMPLE.replace(/\p{L}[\p{L}\u2019']*/gu, (w) => {
-    const k = fixationLength(w.length, strength);
-    return "<b>" + esc(w.slice(0, k)) + "</b>" + esc(w.slice(k));
-  });
+  const frag = document.createDocumentFragment();
+  const re = /\p{L}[\p{L}\u2019']*|[^\p{L}]+/gu;
+  let m;
+  while ((m = re.exec(SAMPLE)) !== null) {
+    const tok = m[0];
+    if (/^\p{L}/u.test(tok)) {
+      const k = fixationLength(tok.length, strength);
+      const b = document.createElement("b");
+      b.textContent = tok.slice(0, k);
+      frag.appendChild(b);
+      const rest = tok.slice(k);
+      if (rest) frag.appendChild(document.createTextNode(rest));
+    } else {
+      frag.appendChild(document.createTextNode(tok));
+    }
+  }
+  preview.replaceChildren(frag);
 }
 function markStrength(strength) {
   [...seg.children].forEach((b) => {

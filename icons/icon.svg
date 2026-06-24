@@ -1,8 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96" width="96" height="96">
-  <rect width="96" height="96" rx="20" fill="#211b14"/>
-  <text x="50%" y="50%" text-anchor="middle" dominant-baseline="central"
-        font-family="Georgia, 'Iowan Old Style', serif" font-size="46" letter-spacing="-2">
-    <tspan fill="#f4efe6" font-weight="800">Bi</tspan><tspan fill="#9c9486" font-weight="400">o</tspan>
-  </text>
-  <circle cx="78" cy="68" r="5" fill="#b3452b"/>
+  <rect width="96" height="96" rx="21" fill="#211b14"/>
+  <!-- three lines of text; the leading "fixation" segment of each is bold/solid,
+       the rest is faded - the core idea of bionic reading -->
+  <rect x="21" y="29" width="25" height="9" rx="4.5" fill="#b3452b"/>
+  <rect x="50" y="29" width="25" height="9" rx="4.5" fill="#f4efe6" opacity="0.34"/>
+  <rect x="21" y="43.5" width="21" height="9" rx="4.5" fill="#f4efe6"/>
+  <rect x="46" y="43.5" width="29" height="9" rx="4.5" fill="#f4efe6" opacity="0.34"/>
+  <rect x="21" y="58" width="17" height="9" rx="4.5" fill="#f4efe6"/>
+  <rect x="42" y="58" width="19" height="9" rx="4.5" fill="#f4efe6" opacity="0.34"/>
 </svg>
