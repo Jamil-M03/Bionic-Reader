@@ -1,67 +1,82 @@
-# Bionic Reader — source & build instructions
+# Bionic Reader
 
-This package contains the complete source for the **Bionic Reader** browser
-extension (Firefox and Chrome), plus a script that reproduces an exact copy of
-each store package.
+Bionic reading for any website or PDF, bolds the first part of each word to
+guide your eyes and help you read faster. Available for Firefox and Chrome.
 
-Everything is shared between the two browsers except the manifest. The two
-manifests live in `manifests/` (`manifest.firefox.json` is Manifest V2,
+<!-- add a screenshot here later
+![Bionic Reader](docs/screenshot.png -->
+
+
+## Install
+
+- 🦊 **Firefox**: [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/bionic-reader1/)
+- 🟦 **Chrome**: [Chrome Web Store](https://chromewebstore.google.com/detail/YOUR_EXTENSION_ID) <!-- fill the real ID once the listing is approved -->
+
+## Features
+
+- Toggle bionic reading on any website from the toolbar button or a keyboard
+  shortcut (`Ctrl+Alt+B` on Firefox, `Alt+Shift+B` on Chrome — both customizable).
+- Three fixation strengths: Low, Medium, High.
+- A built-in **PDF reader**: read PDFs with bionic emphasis while keeping the
+  page's original layout, images, and figures — or turn bionic off for the exact
+  original page. A reflow mode is also available for a clean single-column read.
+- Unicode-aware: keeps contractions intact (don't, it's) and leaves numbers
+  unbolded.
+- **100% local.** Your pages and files never leave your device.
+
+## How it works
+
+Bionic reading highlights the leading letters of each word so your eyes can move
+faster while your brain fills in the rest. On web pages, the extension restyles
+text in place. For PDFs, it uses a bundled copy of
+[pdf.js](https://mozilla.github.io/pdf.js/) to render the page and lay bionic
+text over it, so images and layout are preserved.
+
+## Privacy
+
+Bionic Reader collects, stores, and transmits **no data**. Everything happens
+locally in your browser. See [PRIVACY.md](PRIVACY.md).
+
+## Building from source
+
+Everything is shared between the Firefox and Chrome builds except the manifest.
+The two manifests live in `manifests/` (`manifest.firefox.json` is Manifest V2,
 `manifest.chrome.json` is Manifest V3); `build.sh` selects the right one.
 
-## What is and isn't generated
+### Requirements
 
-- **Hand-written source (not processed in any way):**
-  `manifests/manifest.firefox.json`, `manifests/manifest.chrome.json`,
-  `content.js`, `content.css`, `background.js`,
-  `popup.html`, `popup.js`, `popup.css`,
-  `viewer.html`, `viewer.js`, `viewer.css`, `icons/icon.svg`.
-  These are exactly what runs in the extension. There is no transpilation,
-  concatenation, minification, bundling, or template engine applied to them.
+- A Linux or macOS shell (or Windows with WSL / Git Bash), `build.sh` is bash.
+- **Node.js 18+** and **npm** (verified with Node 22.x).
+- The `zip` command-line utility.
+- Network access to npm (to download `pdfjs-dist`).
 
-- **Third-party library (open source):**
-  `pdfjs/pdf.mjs` and `pdfjs/pdf.worker.mjs` are the official, **unmodified,
-  non-minified** build of [`pdfjs-dist`](https://www.npmjs.com/package/pdfjs-dist)
-  version **4.10.38**, published to npm by Mozilla. They are not built from
-  this repository; they are copied verbatim from the npm package. They power
-  the bundled PDF reader (`viewer.*`).
-  The `eval`/`Function`/dynamic-`import` linter warnings originate entirely
-  from these two files.
-
-- **Icons:** `icons/icon.svg` is the hand-authored master. The PNGs
-  (`icon-32/48/96/128.png`) are exported from it with any SVG rasterizer
-  (e.g. `cairosvg icons/icon.svg -o icons/icon-128.png --output-width 128`)
-  and are static image assets, not code.
-
-## Build environment requirements
-
-- **Operating system:** any Linux or macOS environment (or Windows with WSL or
-  Git Bash). The build script is a POSIX `bash` script.
-- **Node.js:** version 18 or newer. (Built and verified with Node 22.x.)
-- **npm:** the version bundled with the Node.js install above.
-- **zip:** the standard `zip` command-line utility.
-- **Network access** to the public npm registry (to download `pdfjs-dist`).
-
-Install Node.js (which includes npm) from https://nodejs.org/ or via a version
-manager such as nvm (`nvm install 22`).
-
-## Build steps
-
-From the root of this source package, choose a target:
+### Build
 
 ```bash
 ./build.sh firefox    # -> dist/firefox/ + bionic-reader-firefox.zip  (Manifest V2)
 ./build.sh chrome     # -> dist/chrome/  + bionic-reader-chrome.zip   (Manifest V3)
 ```
 
-Each run will:
+Each run downloads `pdfjs-dist@4.10.38` from npm, copies the matching manifest
+plus the shared source and the pdf.js library into `dist/<target>/`, and zips it
+with `manifest.json` at the archive root.
 
-1. Download `pdfjs-dist@4.10.38` from npm (`npm pack`).
-2. Copy `manifests/manifest.<target>.json` (as `manifest.json`) plus the shared
-   source files and the two pdf.js library files into a clean `dist/<target>/`.
-3. Zip that directory into `bionic-reader-<target>.zip`, with `manifest.json` at
-   the archive root — an exact copy of the store package.
+### What is and isn't generated
 
-No other tooling is involved. To verify the pdf.js files are unmodified, the
-files written to `dist/pdfjs/` are byte-identical to the ones already present
-under `pdfjs/` in this package, and both equal `package/build/*.mjs` from the
-npm tarball.
+- **Hand-written source (no build step, copied verbatim):** the two manifests,
+  `content.*`, `background.js`, `popup.*`, `viewer.*`, and `icons/icon.svg`.
+- **Third-party library:** `pdfjs/pdf.mjs` and `pdfjs/pdf.worker.mjs` are the
+  official, unmodified, non-minified build of `pdfjs-dist@4.10.38` from npm
+  (reproduce with `npm pack pdfjs-dist@4.10.38`).
+- **Icons:** the PNGs are exported from `icons/icon.svg` with any SVG rasterizer.
+
+## Loading unpacked (for development)
+
+- **Firefox:** `about:debugging#/runtime/this-firefox` -> Load Temporary Add-on ->
+  pick `dist/firefox/manifest.json`.
+- **Chrome:** `chrome://extensions` -> enable Developer mode -> Load unpacked ->
+  pick the `dist/chrome` folder.
+
+## License
+
+MIT - see [LICENSE](LICENSE).
