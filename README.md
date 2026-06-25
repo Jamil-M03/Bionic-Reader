@@ -77,6 +77,18 @@ with `manifest.json` at the archive root.
 - **Chrome:** `chrome://extensions` -> enable Developer mode -> Load unpacked ->
   pick the `dist/chrome` folder.
 
-## License
-
-MIT - see [LICENSE](LICENSE).
+# License
+**MIT** — see [`LICENSE`](./LICENSE).
+You're free to view, fork, modify, and use this code for any purpose,
+including commercial — just keep the copyright notice and license text
+from the [`LICENSE`](./LICENSE) file in any copies or derivatives. If you
+build something interesting on top of it, I'd love to hear about it via
+my [GitHub profile](https://github.com/Jamil-M03).
+ 
+## Acknowledgements
+PDF rendering is powered by [pdf.js](https://mozilla.github.io/pdf.js/),
+Mozilla's open-source PDF library, bundled unmodified. Inspired by the
+"bionic reading" idea of emphasizing the start of each word to guide the eye.
+ 
+---
+© 2026 Jamil M. Licensed under MIT.
