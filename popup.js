@@ -36,12 +36,30 @@ function markStrength(strength) {
   });
 }
 
+// Show the actual registered shortcut, so the keycap is correct in any browser
+// (Firefox vs Chrome use different defaults) and reflects user customisation.
+function renderShortcut() {
+  const el = document.getElementById("shortcut");
+  if (!el || !api.commands || !api.commands.getAll) return;
+  Promise.resolve(api.commands.getAll()).then((cmds) => {
+    const cmd = (cmds || []).find((c) => c.name === "toggle-bionic");
+    el.replaceChildren();
+    const keys = cmd && cmd.shortcut ? cmd.shortcut.split("+") : ["unset"];
+    keys.forEach((k) => {
+      const kbd = document.createElement("kbd");
+      kbd.textContent = k;
+      el.appendChild(kbd);
+    });
+  }).catch(() => {});
+}
+
 async function init() {
   const { enabled = false, strength = 0.45 } =
     await api.storage.local.get({ enabled: false, strength: 0.45 });
   toggle.checked = enabled;
   markStrength(strength);
   renderPreview(strength);
+  renderShortcut();
 }
 
 toggle.addEventListener("change", () => {

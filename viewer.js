@@ -347,7 +347,10 @@ async function loadPDF(buffer, name) {
     docName.textContent = name || "document.pdf";
     setStatus("Opening PDF\u2026");
 
-    pdfDoc = await pdfjsLib.getDocument({ data: buffer }).promise;
+    pdfDoc = await pdfjsLib.getDocument({
+      data: buffer,
+      isEvalSupported: false  // Chrome MV3 forbids eval/Function; harmless in Firefox
+    }).promise;
     setStatus("");
     await showView();
   } catch (e) {

@@ -1,42 +1,67 @@
-# Bionic Reader (Firefox)
+# Bionic Reader — source & build instructions
 
-Toggle bionic reading — bolding the first part of each word to guide your eyes — on any website, plus a built-in reader for PDFs.
+This package contains the complete source for the **Bionic Reader** browser
+extension (Firefox and Chrome), plus a script that reproduces an exact copy of
+each store package.
 
-## Install (temporary, for testing)
+Everything is shared between the two browsers except the manifest. The two
+manifests live in `manifests/` (`manifest.firefox.json` is Manifest V2,
+`manifest.chrome.json` is Manifest V3); `build.sh` selects the right one.
 
-1. Open `about:debugging#/runtime/this-firefox` in Firefox.
-2. Click **Load Temporary Add-on…**
-3. Select the `manifest.json` file inside this folder.
+## What is and isn't generated
 
-The extension stays loaded until you restart Firefox. To install permanently you'd sign it through [addons.mozilla.org](https://addons.mozilla.org) (or use Firefox Developer/Nightly with `xpinstall.signatures.required` disabled).
+- **Hand-written source (not processed in any way):**
+  `manifests/manifest.firefox.json`, `manifests/manifest.chrome.json`,
+  `content.js`, `content.css`, `background.js`,
+  `popup.html`, `popup.js`, `popup.css`,
+  `viewer.html`, `viewer.js`, `viewer.css`, `icons/icon.svg`.
+  These are exactly what runs in the extension. There is no transpilation,
+  concatenation, minification, bundling, or template engine applied to them.
 
-## Use
+- **Third-party library (open source):**
+  `pdfjs/pdf.mjs` and `pdfjs/pdf.worker.mjs` are the official, **unmodified,
+  non-minified** build of [`pdfjs-dist`](https://www.npmjs.com/package/pdfjs-dist)
+  version **4.10.38**, published to npm by Mozilla. They are not built from
+  this repository; they are copied verbatim from the npm package. They power
+  the bundled PDF reader (`viewer.*`).
+  The `eval`/`Function`/dynamic-`import` linter warnings originate entirely
+  from these two files.
 
-- Click the toolbar icon to open the popup: flip **Bionic mode** on/off and pick a fixation **strength** (Low / Medium / High). It applies to every open tab instantly.
-- Keyboard shortcut: **Ctrl+Alt+B** toggles bionic on the current page. (Change it any time at `about:addons` → gear ⚙ → Manage Extension Shortcuts.)
-- **Open a PDF in the reader** (button in the popup) opens the bundled reader — drop a PDF in and it re-flows the text with bionic emphasis.
+- **Icons:** `icons/icon.svg` is the hand-authored master. The PNGs
+  (`icon-32/48/96/128.png`) are exported from it with any SVG rasterizer
+  (e.g. `cairosvg icons/icon.svg -o icons/icon-128.png --output-width 128`)
+  and are static image assets, not code.
 
-## Why PDFs use a separate reader
+## Build environment requirements
 
-Firefox's built-in PDF viewer (pdf.js) draws the visible text onto a `<canvas>`. The selectable text sitting on top is fully transparent — it exists only for selection and accessibility. So there is **no DOM text to bold**, and a normal content script can't apply bionic to a PDF the way it does to a web page.
+- **Operating system:** any Linux or macOS environment (or Windows with WSL or
+  Git Bash). The build script is a POSIX `bash` script.
+- **Node.js:** version 18 or newer. (Built and verified with Node 22.x.)
+- **npm:** the version bundled with the Node.js install above.
+- **zip:** the standard `zip` command-line utility.
+- **Network access** to the public npm registry (to download `pdfjs-dist`).
 
-The bundled reader works around this with pdf.js. It has two views:
+Install Node.js (which includes npm) from https://nodejs.org/ or via a version
+manager such as nvm (`nvm install 22`).
 
-- **Layout** (default) — keeps the page's original structure (margins, columns, line breaks, positions) and shows the page's images, figures, and diagrams. Bionic emphasis is applied to the text *in place*: the original page is rendered to a canvas, and each bionicized word is laid over it on a small background chip that masks only the original word underneath, so images show through untouched. The bionic text uses a substitute font stretched to match the original spacing. Turn the **Bionic** switch off to see the exact original page.
-- **Reflow** — re-flows the extracted text into a clean single reading column. Best for linear reading; ignores the original layout.
+## Build steps
 
-Notes:
+From the root of this source package, choose a target:
 
-- Text sitting directly on top of a photo or a dark background may show a faint mask rectangle in bionic mode; switch Bionic off for the exact page.
-- Scanned/image-only PDFs have no extractable text, so bionic can't be applied — the page image still shows correctly.
-- Pages render lazily as you scroll, so large PDFs open quickly.
-- Files never leave your device; everything happens locally.
+```bash
+./build.sh firefox    # -> dist/firefox/ + bionic-reader-firefox.zip  (Manifest V2)
+./build.sh chrome     # -> dist/chrome/  + bionic-reader-chrome.zip   (Manifest V3)
+```
 
-## Files
+Each run will:
 
-- `content.js` / `content.css` — splits words on web pages; toggle is a CSS class so on/off is instant.
-- `background.js` — handles the keyboard shortcut.
-- `popup.*` — toolbar UI.
-- `viewer.*` + `pdfjs/` — the bundled PDF reader (pdf.js 4.10.38).
+1. Download `pdfjs-dist@4.10.38` from npm (`npm pack`).
+2. Copy `manifests/manifest.<target>.json` (as `manifest.json`) plus the shared
+   source files and the two pdf.js library files into a clean `dist/<target>/`.
+3. Zip that directory into `bionic-reader-<target>.zip`, with `manifest.json` at
+   the archive root — an exact copy of the store package.
 
-Built with Manifest V2 (Firefox-compatible). The word splitter is Unicode-aware, keeps internal apostrophes (don't, it's), and leaves numbers unbolded.
+No other tooling is involved. To verify the pdf.js files are unmodified, the
+files written to `dist/pdfjs/` are byte-identical to the ones already present
+under `pdfjs/` in this package, and both equal `package/build/*.mjs` from the
+npm tarball.
