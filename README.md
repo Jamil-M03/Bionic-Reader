@@ -9,7 +9,7 @@ guide your eyes and help you read faster. Available for Firefox and Chrome.
 
 ## Install
 
-- 🦊 **Firefox**: [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/bionic-reader1/)
+- 🦊 **Firefox**: [Firefox Add-ons](https://addons.mozilla.org/firefox/addon/bionic-reader-web-pdf/)
 - 🟦 **Chrome**: [Chrome Web Store](https://chromewebstore.google.com/detail/YOUR_EXTENSION_ID) <!-- fill the real ID once the listing is approved -->
 
 ## Features
