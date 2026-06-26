@@ -15,7 +15,7 @@ guide your eyes and help you read faster. Available for Firefox and Chrome.
 ## Features
 
 - Toggle bionic reading on any website from the toolbar button or a keyboard
-  shortcut (`Ctrl+Alt+B` on Firefox, `Alt+Shift+B` on Chrome — both customizable).
+  shortcut (`Ctrl+Alt+B` on Firefox, `Alt+Shift+B` on Chrome, both customizable).
 - Three fixation strengths: Low, Medium, High.
 - A built-in **PDF reader**: read PDFs with bionic emphasis while keeping the
   page's original layout, images, and figures — or turn bionic off for the exact
