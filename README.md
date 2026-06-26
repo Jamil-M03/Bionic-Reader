@@ -18,7 +18,7 @@ guide your eyes and help you read faster. Available for Firefox and Chrome.
   shortcut (`Ctrl+Alt+B` on Firefox, `Alt+Shift+B` on Chrome, both customizable).
 - Three fixation strengths: Low, Medium, High.
 - A built-in **PDF reader**: read PDFs with bionic emphasis while keeping the
-  page's original layout, images, and figures — or turn bionic off for the exact
+  page's original layout, images, and figures, or turn bionic off for the exact
   original page. A reflow mode is also available for a clean single-column read.
 - Unicode-aware: keeps contractions intact (don't, it's) and leaves numbers
   unbolded.
